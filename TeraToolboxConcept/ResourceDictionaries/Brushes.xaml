@@ -1,0 +1,11 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="ToolboxBrush" Color="{StaticResource ToolboxColor}" />
+    <SolidColorBrush x:Key="SelectionBackgroundBrush" Color="White" Opacity=".04" />
+    <SolidColorBrush x:Key="SelectionBackgroundLightBrush" Color="White" Opacity=".08" />
+    <SolidColorBrush x:Key="RevampBackgroundBrush" Color="{StaticResource RevampBackgroundColor}" />
+    <SolidColorBrush x:Key="RevampBorderBrush" Color="{StaticResource RevampBorderColor}" />
+    <SolidColorBrush x:Key="TooltipBrush"                   Color="{StaticResource TooltipColor}"                Opacity=".9"  />
+    <SolidColorBrush x:Key="SelectionBorderBrush"           Color="Transparent"                                                />
+    <SolidColorBrush x:Key="CheckBoxOffBrush" Color="#f666"></SolidColorBrush>
+</ResourceDictionary>

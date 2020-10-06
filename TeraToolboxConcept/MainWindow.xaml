@@ -1,0 +1,778 @@
+﻿<Window x:Class="TTB.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ttb="clr-namespace:TTB"
+        xmlns:fluentWpf="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
+        xmlns:settings="clr-namespace:TTB.Controls.Settings"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:extensions="clr-namespace:Nostrum.Extensions;assembly=Nostrum"
+        fluentWpf:AcrylicWindow.Enabled="True"
+        fluentWpf:AcrylicWindow.AcrylicWindowStyle="None"
+        fluentWpf:AcrylicWindow.TintColor="#292F33"
+        fluentWpf:AcrylicWindow.FallbackColor="#292F33"
+        fluentWpf:AcrylicWindow.TintOpacity=".9"
+        fluentWpf:AcrylicWindow.NoiseOpacity=".01"
+        mc:Ignorable="d"
+        AllowsTransparency="False"
+        Title="TERA Toolbox" Height="500" Width="1000"
+        WindowStyle="SingleBorderWindow"
+        Background="Transparent" d:DataContext="{d:DesignData MainVM}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0"
+                      ResizeBorderThickness="3"
+                      GlassFrameThickness="0 0 0 1"
+                      CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+    <Window.Resources>
+        <DataTemplate x:Key="InstalledModDT" DataType="ttb:ModInfo">
+            <Grid Height="Auto" HorizontalAlignment="Stretch" Width="Auto" Margin="0 0 0 0" MouseLeave="ModMouseLeave"
+                  MouseEnter="ModMouseLeave">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="0" />
+                </Grid.RowDefinitions>
+                <Border BorderThickness="0" Grid.RowSpan="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#08ffffff" />
+                            <Setter Property="BorderBrush" Value="#0fff" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                    <Setter Property="Opacity" Value=".4" />
+                                </DataTrigger>
+                            </Style.Triggers>
+
+                            <!--<Style.Triggers>
+                                <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                    <Setter Property="Background" Value="#5611"></Setter>
+                                    <Setter Property="BorderBrush" Value="#0933"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>-->
+
+                        </Style>
+                    </Border.Style>
+
+                </Border>
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                    <Setter Property="Opacity" Value=".4" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Border Background="#05ffffff" BorderThickness="1" BorderBrush="#2fff" />
+                    <TextBlock FontWeight="DemiBold" FontSize="16" Foreground="#ddd" Margin="6 3">
+                        <Run Text="{Binding Name}" />
+                        <Run Text="{Binding Version}" FontSize="11" Foreground="#999" FontWeight="Normal" />
+                        <LineBreak />
+                        <Run Text="{Binding Description}" FontSize="13" Foreground="#999" FontWeight="Normal" />
+                    </TextBlock>
+                    <TextBlock FontSize="13" Margin="0 0 6 4" VerticalAlignment="Bottom"
+                               TextAlignment="Right" HorizontalAlignment="Right" Foreground="#999">
+                        <Run Text="by" Foreground="#666" FontSize="11" />
+                        <Run Text="{Binding Author}" />
+                    </TextBlock>
+                </Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="1 6">
+                    <Button Height="16" Width="16" Margin="0" ToolTip="Autoupdate disabled. Click to re-enable."
+                            extensions:ButtonExtensions.CornerRadius="8" Command="{Binding ToggleAutoUpdateCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding AutoUpdateEnabled}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Path Data="{StaticResource SyncOffSVG}" Height="12" Width="12" Fill="#f55" />
+                    </Button>
+                    <Button Height="16" Width="16" Margin="0" ToolTip="Mod disabled. Click to re-enable."
+                            extensions:ButtonExtensions.CornerRadius="8" Command="{Binding ToggleEnabledCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Enabled}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Path Height="12" Width="12" Fill="#f55" Data="{StaticResource DisableSVG}" />
+                    </Button>
+
+                    <Button Height="16" Width="16" Margin="0" x:Name="ActionBtn"
+                            extensions:ButtonExtensions.CornerRadius="8" Cursor="Arrow"
+                            Command="{Binding OpenPopupCommand}">
+                        <Path Stretch="Uniform" Height="12" Width="12"
+                              Data="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" />
+                    </Button>
+
+                </StackPanel>
+                <Popup IsOpen="{Binding IsPopupOpen}" PopupAnimation="Slide" AllowsTransparency="True"
+                       Placement="Left" PlacementTarget="{Binding ElementName=ActionBtn}"
+                       MouseLeave="Popup_OnMouseLeave" HorizontalOffset="-3" VerticalOffset="0">
+                    <Grid Margin="20">
+                        <Border Background="#ee292F33" CornerRadius="3">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="15" Opacity=".4" Direction="-90" />
+                            </Border.Effect>
+                        </Border>
+                        <StackPanel Orientation="Vertical" Margin="0">
+                            <StackPanel.Resources>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Height" Value="30" />
+                                    <Setter Property="Width" Value="200" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                    <Setter Property="extensions:ButtonExtensions.CornerRadius" Value="3" />
+                                </Style>
+                            </StackPanel.Resources>
+                            <Button Command="{Binding ToggleEnabledCommand}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Stretch="Uniform">
+                                        <Path.Style>
+                                            <Style BasedOn="{StaticResource {x:Type Path}}" TargetType="Path">
+                                                <Setter Property="Data" Value="{StaticResource EnableSVG}" />
+                                                <Setter Property="Fill" Value="#0b7" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Enabled}" Value="True">
+                                                        <Setter Property="Data" Value="{StaticResource DisableSVG}" />
+                                                        <Setter Property="Fill" Value="#f66" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+
+                                            </Style>
+                                        </Path.Style>
+
+                                    </Path>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Disable" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                                        <Setter Property="Text" Value="Enable" />
+
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+
+                                    </TextBlock>
+                                </Grid>
+                            </Button>
+                            <Button>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Stretch="Uniform"
+                                          Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                    <TextBlock Text="Info" Grid.Column="1" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+                            <Button Command="{Binding ToggleAutoUpdateCommand}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Stretch="Uniform" Data="{StaticResource SyncOnSVG}">
+                                        <Path.Style>
+                                            <Style BasedOn="{StaticResource {x:Type Path}}" TargetType="Path">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AutoUpdateEnabled}" Value="False">
+                                                        <Setter Property="Opacity" Value=".2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Disable autoupdate" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AutoUpdateEnabled}" Value="False">
+                                                        <Setter Property="Text" Value="Enable autoupdate" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Button>
+                            <Button>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Stretch="Uniform"
+                                          Data="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"
+                                          Fill="#f66" />
+                                    <TextBlock Text="Remove" Grid.Column="1" VerticalAlignment="Center" />
+                                </Grid>
+                            </Button>
+
+                        </StackPanel>
+                    </Grid>
+                </Popup>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="AvailableModDT" DataType="ttb:ModInfo">
+            <Grid Height="Auto" HorizontalAlignment="Stretch" Width="Auto" Margin="0 0 0 0" MouseLeave="ModMouseLeave"
+                  MouseEnter="ModMouseLeave">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="0" />
+                </Grid.RowDefinitions>
+                <Border BorderThickness="0" Grid.RowSpan="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#08ffffff" />
+                            <Setter Property="BorderBrush" Value="#0fff" />
+                        </Style>
+                    </Border.Style>
+
+                </Border>
+                <Grid>
+                    <Border Background="#05ffffff" BorderThickness="1" BorderBrush="#2fff" />
+                    <TextBlock FontWeight="DemiBold" FontSize="16" Foreground="#ddd" Margin="6 3">
+                        <Run Text="{Binding Name}" />
+                        <Run Text="{Binding Version}" FontSize="11" Foreground="#999" FontWeight="Normal" />
+                        <LineBreak />
+                        <Run Text="{Binding Description}" FontSize="13" Foreground="#999" FontWeight="Normal" />
+                    </TextBlock>
+                    <TextBlock FontSize="13" Margin="0 0 6 4" VerticalAlignment="Bottom"
+                               TextAlignment="Right" HorizontalAlignment="Right" Foreground="#999">
+                        <Run Text="by" Foreground="#666" FontSize="11" />
+                        <Run Text="{Binding Author}" />
+                    </TextBlock>
+                </Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3 6">
+
+                    <Button Height="16" Width="16" Margin="0" x:Name="ActionBtn" ToolTip="Download"
+                            extensions:ButtonExtensions.CornerRadius="8">
+                        <Path Stretch="Uniform" Height="12" Width="12"
+                              Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LogDT">
+            <RichTextBox FontFamily="Consolas" Background="Transparent" BorderThickness="0" IsReadOnly="True">
+                <RichTextBox.Resources>
+                    <Style TargetType="{x:Type Paragraph}">
+                        <Setter Property="Margin" Value="0" />
+                    </Style>
+                </RichTextBox.Resources>
+                <FlowDocument Foreground="#ccc" FontSize="12">
+                    <Paragraph Foreground="#ff6060">[20:24:46.729] [modern-parcelpostlog] WARNING: Mod disabled due to incompatibility with current patch. Wait for an update by the developer.</Paragraph>
+                    <Paragraph>[20:24:46.730] [mods] Loaded module "Modern UI: Parcel post" (modern-ParcelPostLog)</Paragraph>
+                    <Paragraph>[20:24:46.732] [mods] Loaded module "Modern UI: Crafting popup" (modern-ProductionCreatePopUp)</Paragraph>
+                    <Paragraph>[20:24:46.737] [mods] Loaded module "Modern UI: Crafting" (modern-ProductionList)</Paragraph>
+                    <Paragraph>[20:24:46.783] [mods] Loaded module "Modern UI: Resources" (modern-Resources)</Paragraph>
+                    <Paragraph Foreground="#ff6060">[20:24:46.785] [modern-servantstoragewindow] WARNING: Mod disabled due to incompatibility with current patch. Wait for an update by the developer.</Paragraph>
+                    <Paragraph>[20:24:46.786] [mods] Loaded module "Modern UI: Companion list" (modern-ServantStorageWindow)</Paragraph>
+                    <Paragraph>[20:24:46.792] [mods] Loaded module "Modern UI: Skill window (hides skill bar)" (modern-SkillWindow_AutoHide)</Paragraph>
+                    <Paragraph Foreground="#ff6060">[20:24:46.793] [modern-storewindow] WARNING: Mod disabled due to incompatibility with current patch. Wait for an update by the developer.</Paragraph>
+                    <Paragraph>[20:24:46.793] [mods] Loaded module "Modern UI: Merchant" (modern-StoreWindow)</Paragraph>
+                    <Paragraph Foreground="#ff6060">[20:24:46.794] [modern-systemoption] WARNING: Mod disabled due to incompatibility with current patch. Wait for an update by the developer.</Paragraph>
+                    <Paragraph>[20:24:46.795] [mods] Loaded module "Modern UI: Options" (modern-SystemOption)</Paragraph>
+                    <Paragraph>[20:24:46.798] [mods] Loaded module "Modern UI: Trade popup" (modern-TradePopup)</Paragraph>
+                    <Paragraph Foreground="#ff6060">[20:24:46.799] [modern-warehousewindow] WARNING: Mod disabled due to incompatibility with current patch. Wait for an update by the developer.</Paragraph>
+                    <Paragraph>[20:24:46.799] [mods] Loaded module "Modern UI: Bank" (modern-WareHouseWindow)</Paragraph>
+                    <Paragraph>[20:24:46.802] [mods] Loaded module "UI Remover: Boss Window" (remove-BossWindow)</Paragraph>
+                    <Paragraph>[20:24:46.806] [mods] Loaded module "UI Remover: Buff Window" (remove-Buffs)</Paragraph>
+                    <Paragraph>[20:24:46.809] [mods] Loaded module "UI Remover: Character Window" (remove-CharacterWindow)</Paragraph>
+                    <Paragraph>[20:24:46.812] [mods] Loaded module "UI Remover: Flight Gauge Window" (remove-FlightGauge)</Paragraph>
+                    <Paragraph>[20:24:46.815] [mods] Loaded module "UI Remover: LFG Window" (remove-LFG window)</Paragraph>
+                    <Paragraph>[20:24:46.819] [mods] Loaded module "UI Remover: Chat Window" (remove-PartyRaidWindow)</Paragraph>
+                    <Paragraph>[20:24:46.823] [mods] Loaded module "UI Remover: Party Window" (remove-PartyWindow)</Paragraph>
+                    <Paragraph>[20:24:46.827] [mods] Loaded module "UI Remover: Raid Window" (remove-RaidWindow)</Paragraph>
+                    <Paragraph>[20:24:46.827] [tcc] Starting ngen...</Paragraph>
+                    <Paragraph>[20:24:46.831] [mods] Loaded module "TCC" (TCC)</Paragraph>
+                    <Paragraph>[20:24:46.832] [mods] Loaded module "tera-game-state-helper"</Paragraph>
+                    <Paragraph>[20:24:46.844] [mods] Loaded module "Thinkblob"</Paragraph>
+                    <Paragraph>[20:24:47.537] [tcc] Starting TCC...</Paragraph>
+                    <Paragraph>[20:24:53.411] [toolbox] Loaded protocol version 359882 (EU v88.4).</Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </DataTemplate>
+        <DataTemplate x:Key="InstalledModsDT" DataType="ttb:InstalledModsVM">
+            <ListBox Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource InstalledModDT}"
+                     ItemsSource="{Binding Mods}" HorizontalAlignment="Stretch" Margin="4 2"
+                     ItemContainerStyle="{StaticResource DefaultListItemStyle}" />
+
+        </DataTemplate>
+        <DataTemplate x:Key="DownloadModsDT" DataType="ttb:DownloadModsVM">
+            <ListBox Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource AvailableModDT}"
+                     ItemsSource="{Binding Mods}" HorizontalAlignment="Stretch" Margin="4 2"
+                     ItemContainerStyle="{StaticResource DefaultListItemStyle}" />
+
+        </DataTemplate>
+        <DataTemplate x:Key="SettingsDT" DataType="ttb:SettingsVM">
+            <StackPanel Margin="0" Width="400" VerticalAlignment="Center">
+                <StackPanel.Resources>
+                    <Style TargetType="settings:SelectionSetting">
+                        <Setter Property="BorderThickness" Value="0 0 0 1" />
+                        <Setter Property="BorderBrush" Value="#1fff" />
+                    </Style>
+                    <Style TargetType="settings:CheckboxSetting">
+                        <Setter Property="BorderThickness" Value="0 0 0 1" />
+                        <Setter Property="BorderBrush" Value="#1fff" />
+                    </Style>
+                </StackPanel.Resources>
+                <settings:SelectionSetting SettingName="Language"
+                                           Choices="{Binding Languages, Mode=OneWay}"
+                                           ChoicesType="{x:Type system:String}"
+                                           SelectedItem="{Binding Language}"
+                                           BorderThickness="0 1 0 1"
+                                           SvgIcon="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z">
+                    <settings:SelectionSetting.ChoicesTemplate>
+                        <DataTemplate DataType="system:String">
+                            <TextBlock Text="{Binding}" />
+                        </DataTemplate>
+                    </settings:SelectionSetting.ChoicesTemplate>
+                </settings:SelectionSetting>
+                <settings:CheckboxSetting SettingName="Autostart" CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          IsOn="True"
+                                          SvgIcon="M5.35,12.65L6.5,9L7.65,12.65M5.5,7L2.3,16H4.2L4.9,14H8.1L8.8,16H10.7L7.5,7M11,20H22V18H11M14,16H19V11H22L16.5,5.5L11,11H14V16Z" />
+                <settings:CheckboxSetting SettingName="Detailed update log"
+                                          CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          SvgIcon="M22,3H5A2,2 0 0,0 3,5V9H5V5H22V19H5V15H3V19A2,2 0 0,0 5,21H22A2,2 0 0,0 24,19V5A2,2 0 0,0 22,3M7,15V13H0V11H7V9L11,12L7,15M20,13H13V11H20V13M20,9H13V7H20V9M17,17H13V15H17V17Z" />
+                <settings:CheckboxSetting SettingName="Timestamp in log" CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          IsOn="True"
+                                          SvgIcon="M14,12H15.5V14.82L17.94,16.23L17.19,17.53L14,15.69V12M4,2H18A2,2 0 0,1 20,4V10.1C21.24,11.36 22,13.09 22,15A7,7 0 0,1 15,22C13.09,22 11.36,21.24 10.1,20H4A2,2 0 0,1 2,18V4A2,2 0 0,1 4,2M4,15V18H8.67C8.24,17.09 8,16.07 8,15H4M4,8H10V5H4V8M18,8V5H12V8H18M4,13H8.29C8.63,11.85 9.26,10.82 10.1,10H4V13M15,10.15A4.85,4.85 0 0,0 10.15,15C10.15,17.68 12.32,19.85 15,19.85A4.85,4.85 0 0,0 19.85,15C19.85,12.32 17.68,10.15 15,10.15Z" />
+                <settings:CheckboxSetting SettingName="Disable all mod updates"
+                                          CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          SvgIcon="{StaticResource SyncOffSVG}" />
+                <settings:CheckboxSetting SettingName="Disable self-updates"
+                                          CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          SvgIcon="{StaticResource SyncOffSVG}" />
+                <settings:CheckboxSetting SettingName="Hide tags in server list"
+                                          CheckBoxColor="{StaticResource ToolboxBrush}"
+                                          SvgIcon="M6.5 5A1.5 1.5 0 1 0 8 6.5A1.5 1.5 0 0 0 6.5 5M6.5 5A1.5 1.5 0 1 0 8 6.5A1.5 1.5 0 0 0 6.5 5M21.41 11.58L12.41 2.58A2 2 0 0 0 11 2H4A2 2 0 0 0 2 4V11A2 2 0 0 0 2.59 12.42L3 12.82A5.62 5.62 0 0 1 5.08 12.08L4 11V4H11L20 13L13 20L11.92 18.92A5.57 5.57 0 0 1 11.18 21L11.59 21.41A2 2 0 0 0 13 22A2 2 0 0 0 14.41 21.41L21.41 14.41A2 2 0 0 0 22 13A2 2 0 0 0 21.41 11.58M6.5 5A1.5 1.5 0 1 0 8 6.5A1.5 1.5 0 0 0 6.5 5M8.12 21.54L6 19.41L3.88 21.54L2.46 20.12L4.59 18L2.46 15.88L3.88 14.46L6 16.59L8.12 14.46L9.54 15.88L7.41 18L9.54 20.12Z" />
+                <settings:CheckboxSetting SettingName="Minimize to system tray"
+                                          CheckBoxColor="{StaticResource ToolboxBrush}" IsOn="True"
+                                          SvgIcon="M16 10H8V8H16M2 17A2 2 0 0 0 4 19H20A2 2 0 0 0 22 17V12H20V17H4V12H2Z" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="CreditsDT">
+            <Grid>
+                <Image Source="D:\Vincenzo\Desktop\banner-3d.png" Stretch="None" HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       Opacity=".1" />
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="430">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                            <Setter Property="FontWeight" Value="DemiBold" />
+                            <Setter Property="Foreground" Value="#aaa" />
+                            <Setter Property="Margin" Value="4 2" />
+                            <Setter Property="FontSize" Value="18" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <TextBlock Text="Thanks to" HorizontalAlignment="Center" Foreground="#777" Margin="0 -10 0 10" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Foreground="{StaticResource ToolboxBrush}" TextAlignment="Right">SaltyMonkey</TextBlock>
+                        <TextBlock Grid.Column="1" TextAlignment="Left">Installer</TextBlock>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Foreground="{StaticResource ToolboxBrush}" TextAlignment="Right">Mathicha &amp; Pentagon</TextBlock>
+                        <TextBlock Grid.Column="1" TextAlignment="Left">Core GUI stuff</TextBlock>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Foreground="{StaticResource ToolboxBrush}" TextAlignment="Right">Foglio</TextBlock>
+                        <TextBlock Grid.Column="1" TextAlignment="Left">Logo design</TextBlock>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Foreground="{StaticResource ToolboxBrush}" TextAlignment="Right">Meishu</TextBlock>
+                        <TextBlock Grid.Column="1" TextAlignment="Left">Original Tera-Proxy Core</TextBlock>
+                    </Grid>
+                    <Grid Margin="0 10 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.ColumnSpan="2" TextAlignment="Center"
+                                   Foreground="{StaticResource ToolboxBrush}">
+                            All Toolbox Translators
+                        </TextBlock>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.ColumnSpan="2" TextAlignment="Center"
+                                   Foreground="{StaticResource ToolboxBrush}">
+                            All Mod Developers
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+        <ttb:MainTemplateSelector x:Key="MainTemplateSelector"
+                                  Log="{StaticResource LogDT}"
+                                  InstalledMods="{StaticResource InstalledModsDT}"
+                                  DownloadMods="{StaticResource DownloadModsDT}"
+                                  Settings="{StaticResource SettingsDT}"
+                                  Credits="{StaticResource CreditsDT}" />
+    </Window.Resources>
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Background="#292F33" Grid.ColumnSpan="2" Grid.RowSpan="2" Opacity=".2">
+            <!--<Border.Effect>
+                <DropShadowEffect Opacity=".2" RenderingBias="Performance" BlurRadius="15" ShadowDepth="5"
+                                  Direction="-90" />
+            </Border.Effect>-->
+        </Border>
+        <Rectangle Fill="#3000" Grid.ColumnSpan="2" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown" />
+        <Image Source="D:\Vincenzo\Desktop\tt.ico" HorizontalAlignment="Left" Margin="8 0" VerticalAlignment="Center"
+               Stretch="Uniform" Width="24" Height="24" IsHitTestVisible="False" />
+        <ContentControl Margin="40 2 10 2" Grid.Row="1" Grid.ColumnSpan="2"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        x:Name="MainContent" Content="{Binding CurrentVM}"
+                        ContentTemplateSelector="{StaticResource MainTemplateSelector}" />
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Grid.ColumnSpan="2">
+            <TextBlock Text="TERA Toolbox"
+                       Foreground="#ddd"
+                       FontSize="14"
+                       IsHitTestVisible="False" />
+            <Path
+                Data="M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z"
+                ToolTip="Administrator" Height="12" Width="12" Opacity="1" Fill="#7279FF" Margin="-4 1 0 0"
+                HorizontalAlignment="Left" StrokeThickness="1" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1">
+            <Button VerticalContentAlignment="Center" Padding="0" VerticalAlignment="Center" Width="30"
+                    Click="MinimizeBtnOnClick">
+                <Path Data="M20,14H4V10H20"
+                      Width="12" Height="12" Margin="0 7 0 0" />
+            </Button>
+            <Button VerticalContentAlignment="Center" Padding="0" VerticalAlignment="Center" Width="30"
+                    Click="CloseBtnOnClick">
+                <Path
+                    Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                    Width="12" Height="12" Fill="#ff3b3b" />
+            </Button>
+        </StackPanel>
+        <Border Background="#2d3438" Grid.Row="1" Width="40" HorizontalAlignment="Left" x:Name="bgBorder" Opacity="1">
+            <Border.Effect>
+                <DropShadowEffect Opacity="0" Color="#292F33" RenderingBias="Performance" BlurRadius="20"
+                                  ShadowDepth="10"
+                                  Direction="0" />
+            </Border.Effect>
+
+        </Border>
+        <Rectangle Fill="Transparent" Grid.Row="1" MouseEnter="UIElement_OnMouseEnter"
+                   MouseLeave="UIElement_OnMouseLeave" Width="40" HorizontalAlignment="Left"
+                   VerticalAlignment="Stretch" x:Name="SliderActivator"/>
+        <Rectangle Fill="Red" Grid.Row="1" Width="40" Margin="-500 0 0 0" Grid.ColumnSpan="2"
+                   HorizontalAlignment="Left" x:Name="opRect"
+                   UseLayoutRounding="True" SnapsToDevicePixels="True">
+            <Rectangle.RenderTransform>
+                <ScaleTransform ScaleX="1" />
+            </Rectangle.RenderTransform>
+        </Rectangle>
+        <Grid Margin="0" Grid.Row="1" x:Name="ButtonsGrid" 
+              IsHitTestVisible="False" MouseLeave="UIElement_OnMouseLeave">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.OpacityMask>
+                <VisualBrush Visual="{Binding ElementName=opRect}" Stretch="None" AlignmentX="Left" />
+            </Grid.OpacityMask>
+            <!--<Rectangle Fill="#7279FF" Height="40" Width="3" HorizontalAlignment="Left" Margin="0 0 0 0" VerticalAlignment="Top"
+                       x:Name="SelectionRect"></Rectangle>-->
+            <Rectangle Width="3" Fill="{StaticResource ToolboxBrush}" x:Name="SelRect"
+                       HorizontalAlignment="Left" Height="40" VerticalAlignment="Top">
+                <Rectangle.RenderTransform>
+                    <TranslateTransform />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <StackPanel x:Name="ButtonsSP">
+                <Button Command="{Binding SetVmCommand}" CommandParameter="Log"
+                        Click="ButtonBase_OnClick">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" />
+                        <TextBlock Text="Log" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding SetVmCommand}" CommandParameter="InstalledMods"
+                        Click="ButtonBase_OnClick">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L10.11,5.22L16,8.61L17.96,7.5L12,4.15M6.04,7.5L12,10.85L13.96,9.75L8.08,6.35L6.04,7.5M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z" />
+                        <TextBlock Text="Installed mods" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding SetVmCommand}" CommandParameter="DownloadMods"
+                        Click="ButtonBase_OnClick">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" />
+                        <TextBlock Text="Download mods" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding SetVmCommand}" CommandParameter="Settings"
+                        Click="ButtonBase_OnClick">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                        <TextBlock Text="Settings" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding OpenModsFolderCommand}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M19,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H10L12,6H19A2,2 0 0,1 21,8H21L4,8V18L6.14,10H23.21L20.93,18.5C20.7,19.37 19.92,20 19,20Z" />
+                        <TextBlock Text="Open mods folder" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding HelpCommand}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z" />
+                        <TextBlock Text="Help" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <Button Command="{Binding SetVmCommand}" CommandParameter="Credits"
+                        Click="ButtonBase_OnClick">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Path
+                            Data="M17.71 6.15C17.46 5.38 16.79 5.21 16.45 4.77C16.14 4.31 16.18 3.62 15.53 3.15S14.23 2.92 13.7 2.77 12.81 2 12 2 10.82 2.58 10.3 2.77 9.13 2.67 8.47 3.15 7.86 4.31 7.55 4.77C7.21 5.21 6.55 5.38 6.29 6.15S6.5 7.45 6.5 8 6 9.08 6.29 9.85 7.21 10.79 7.55 11.23C7.86 11.69 7.82 12.38 8.47 12.85S9.77 13.08 10.3 13.23 11.19 14 12 14 13.18 13.42 13.7 13.23 14.87 13.33 15.53 12.85 16.14 11.69 16.45 11.23C16.79 10.79 17.45 10.62 17.71 9.85S17.5 8.55 17.5 8 18 6.92 17.71 6.15M12 12A4 4 0 1 1 16 8A4 4 0 0 1 12 12M14 8A2 2 0 1 1 12 6A2 2 0 0 1 14 8M13.71 15.56L13.08 19.16L12.35 23.29L9.74 20.8L6.44 22.25L7.77 14.75A4 4 0 0 0 9.66 15.17A4.15 4.15 0 0 0 11 15.85A3.32 3.32 0 0 0 12 16A3.5 3.5 0 0 0 13.71 15.56M17.92 18.78L15.34 17.86L15.85 14.92A3.2 3.2 0 0 0 16.7 14.47L16.82 14.37Z" />
+                        <TextBlock Text="Credits" Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+            </StackPanel>
+            <Button Grid.Row="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Path Fill="#0bd98a"
+                          Data="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                    <TextBlock Text="Start" Grid.Column="1" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+        </Grid>
+        <!--Loading-->
+        <Border Background="#292F33" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown" >
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="False">
+                            <Setter Property="IsHitTestVisible" Value="False"></Setter>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <BeginStoryboard.Storyboard>
+                                        <Storyboard Storyboard.TargetProperty="Opacity">
+                                            <DoubleAnimation Duration="0:0:0.2" To="0"></DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard.Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <!--<Setter Property="Visibility" Value="Collapsed" />-->
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid ClipToBounds="True">
+                <Rectangle Fill="#353d42" >
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="30"/>
+                            <TranslateTransform Y="185"></TranslateTransform>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                    <Rectangle.Effect>
+                        <DropShadowEffect BlurRadius="50" Opacity=".5"/>
+                    </Rectangle.Effect>
+                </Rectangle>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Grid UseLayoutRounding="False" SnapsToDevicePixels="False">
+                        <Grid.Resources>
+                            <Style TargetType="Image">
+                                <Setter Property="Width" Value="96" />
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Stretch" Value="Uniform" />
+                                <Setter Property="RenderOptions.BitmapScalingMode" Value="Fant" />
+                                <Setter Property="RenderTransformOrigin" Value=".5 .5" />
+                            </Style>
+                            <Storyboard x:Key="Rotation" RepeatBehavior="Forever">
+                                <DoubleAnimation From="0" To="359.9" Duration="0:0:5"
+                                             Storyboard.TargetProperty="RenderTransform.(RotateTransform.Angle)" />
+                            </Storyboard>
+                            <Storyboard x:Key="RotationSmall" RepeatBehavior="Forever">
+                                <DoubleAnimation From="359.9" To="0" Duration="0:0:4"
+                                             Storyboard.TargetProperty="RenderTransform.(RotateTransform.Angle)" />
+                            </Storyboard>
+                            <Storyboard x:Key="RotationEye" RepeatBehavior="Forever">
+                                <DoubleAnimation From="180" To="0" Duration="0:0:2"
+                                             Storyboard.TargetProperty="RenderTransform.(RotateTransform.Angle)" >
+                                    <DoubleAnimation.EasingFunction>
+                                        <BackEase Amplitude="1.5" EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+
+                        </Grid.Resources>
+                        <Image Source="D:/Blender/TTB_wpf/bg_gear.png" Opacity="1">
+                            <Image.Effect>
+                                <DropShadowEffect ShadowDepth="0" Color="{StaticResource ToolboxColor}" BlurRadius="15"></DropShadowEffect>
+                            </Image.Effect>
+                            <Image.Style>
+                                <Style BasedOn="{StaticResource {x:Type Image}}" TargetType="Image">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="StartRotating"
+                                                             Storyboard="{StaticResource Rotation}" />
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="StartRotating" />
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                            <Image.RenderTransform>
+                                <RotateTransform />
+                            </Image.RenderTransform>
+                        </Image>
+                        <Image Source="D:/Blender/TTB_wpf/fg_gear.png">
+                            <Image.Style>
+                                <Style BasedOn="{StaticResource {x:Type Image}}" TargetType="Image">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="StartRotating"
+                                                             Storyboard="{StaticResource RotationSmall}" />
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="StartRotating" />
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+
+                            <Image.RenderTransform>
+                                <RotateTransform />
+                            </Image.RenderTransform>
+
+                        </Image>
+                        <Image Source="D:/Blender/TTB_wpf/balder_eye.png">
+                            <Image.Style>
+                                <Style BasedOn="{StaticResource {x:Type Image}}" TargetType="Image">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="StartRotatingEye"
+                                                             Storyboard="{StaticResource RotationEye}" />
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="StartRotatingEye" />
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+
+                            <Image.RenderTransform>
+                                <RotateTransform />
+                            </Image.RenderTransform>
+
+                        </Image>
+
+
+                    </Grid>
+                    <Separator Width="200" Margin="0 10">
+                        <Separator.Background>
+                            <LinearGradientBrush EndPoint="1 0">
+                                <GradientStop Color="Transparent" />
+                                <GradientStop Color="#5fff" Offset=".5" />
+                                <GradientStop Color="Transparent" Offset="1" />
+                            </LinearGradientBrush>
+                        </Separator.Background>
+                    </Separator>
+                    <TextBlock HorizontalAlignment="Center" Text="{Binding LoadingMessage}" Foreground="#999" FontStyle="Italic" />
+                </StackPanel>
+
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
